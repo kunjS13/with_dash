@@ -1,0 +1,126 @@
+/* Color Palette: #01161e, #124559, #598392, #aec3b0, #eff6e0 */
+
+
+:root {
+    --color1: #01161e;
+    --color2: #124559;
+    --color3: #598392;
+    --color4: #aec3b0;
+    --color5: #eff6e0;
+    --color6: #e3b859;
+}
+
+body {
+    background-color: var(--color1);
+    color: var(--color5);
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 100;
+}
+
+#root {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+    background-color: var(--color2);
+}
+
+#interval {
+    display: none;
+}
+
+@media (max-width: 1250px) {
+    #root {
+        flex-direction: column;
+        justify-content: flex-start;
+        background-color: var(--color3);
+    }
+}
+/**********************************************************************************************************************/
+/*Side panel*/
+/**********************************************************************************************************************/
+#panel-side {
+    padding:  2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: var(--color2); /* Darker background color */
+    color: var(--color4); /* Light text color */
+    width: 20%; /* Fixed width for the side panel */
+    position: fixed;
+    left:  0;
+    top:  0;
+    height:  100vh;
+    overflow-y: auto;
+    box-shadow:  0  4px  8px  0 rgba(0,  0,  0,  0.2),  0  6px  20px  0 rgba(0,  0,  0,  0.19); /* Optional shadow for depth */
+}
+
+#panel-side .CANSAT-logo {
+    margin-bottom:  1rem; /* Space between logo and switch */
+}
+
+#panel-side .switch {  
+    margin-bottom:  2rem; /* Space between switch and avionics */
+    font-weight: bold; 
+}
+
+
+#panel-side .avionics {
+    margin-bottom:  1rem; /* Space between indicators */
+}
+
+#panel-side .Team-info {
+    margin-top:  2rem; /* Space between indicators and team info */
+    justify-content: end;
+}
+
+#panel-side .mission-check-list {
+    cursor: pointer;
+    margin-top:  2rem; /* Space between team info and mission check list */
+}
+
+#side-systems-check {
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: repeat(5,  1fr);
+    grid-template-rows: repeat(2, auto);
+    gap:  1rem; /* Adjust the gap between grid items as needed */
+    width:  100%; /* Ensure the grid takes up the full width of the side panel */
+    padding:  0; /* Remove any padding that might affect the grid layout */
+}
+
+/**********************************************************************************************************************/
+/*Main panel*/
+/**********************************************************************************************************************/
+#panel-main {
+    padding:  1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: var(--color3); /* Lighter background color */
+    color: var(--color1); /* Dark text color */
+    width:  80%; /* Take up the full width of the screen */
+    margin-left:  20%; /* Ensure the main panel doesn't overlap the side panel */
+}
+
+.main-panel-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+#main-panel-content {
+    font-size: 16px;
+}
+
+@media (max-width: 1250px) {
+    #panel-main {
+        width: 100%;
+        margin-left: 0;
+    }
+}
