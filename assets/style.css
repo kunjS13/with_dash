@@ -8,6 +8,7 @@
     --color4: #aec3b0;
     --color5: #eff6e0;
     --color6: #e3b859;
+    --color7: #a9cad6;
 }
 
 body {
@@ -68,7 +69,6 @@ body {
     font-weight: bold; 
 }
 
-
 #panel-side .avionics {
     margin-bottom:  1rem; /* Space between indicators */
 }
@@ -84,6 +84,7 @@ body {
 }
 
 #side-systems-check {
+    margin-top:  2rem;
     cursor: pointer;
     display: grid;
     grid-template-columns: repeat(5,  1fr);
@@ -91,6 +92,25 @@ body {
     gap:  1rem; /* Adjust the gap between grid items as needed */
     width:  100%; /* Ensure the grid takes up the full width of the side panel */
     padding:  0; /* Remove any padding that might affect the grid layout */
+}
+
+/* Targeting the dropdown by its class */
+.flightmode {
+    background-color: #a9cad6; /* Light grey background */
+    color: #aec3b0; /* Dark grey text */
+    border: 2px solid #e3b859; /* Grey border */
+    border-radius: 0.25rem; /* Rounded corners */
+    padding: 0.375rem 0.75rem; /* Padding around text */
+    font-size: 1rem; /* Text size */
+    line-height: 1.5;
+    align-content: center; /* Space between lines of text */
+}
+
+/* Targeting the dropdown by its ID */
+#side-systems-check-flight-mode-dropdown-component {
+    width: 100%; /* Full width */
+    max-width: 300px; /* Maximum width */
+    margin: 0 auto; /* Centered */
 }
 
 /**********************************************************************************************************************/

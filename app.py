@@ -1,12 +1,14 @@
 # IMPORTS
 import dash
 from dash import dcc, html, callback
-from dash.dependencies import Input, Output,State
+from dash.dependencies import Input, Output, State
 import pandas as pd
 import plotly.express as px
 import dash_daq as daq
 import subprocess
 import plotly.graph_objects as go
+import datetime
+
 
 # Create a Dash app
 app = dash.Dash(
@@ -47,7 +49,7 @@ cansat_utc = html.Div(
     children=[
         daq.LEDDisplay(
             id="main-control-panel-cansat-utc-component",
-            value="12:00",
+            value="12:00:00",
             label="CANSAT Time",
             size=40,
             color="#e3b859",
@@ -79,8 +81,8 @@ battery_current = html.Div(
     children=[
         daq.LEDDisplay(
             id="main-control-panel-battery-current-component",
-            value="12:00",
-            label="Time",
+            value="2.0",
+            label="Current (in A)",
             size=20,
             color="#e3b859",
             backgroundColor="#2b2b2b",
@@ -94,8 +96,8 @@ battery_voltage = html.Div(
     children=[
         daq.LEDDisplay(
             id="main-control-panel-battery-voltage-component",
-            value="12:00",
-            label="Time",
+            value="12.0",
+            label="Voltage (in V)",
             size=20,
             color="#e3b859",
             backgroundColor="#2b2b2b",
@@ -421,6 +423,18 @@ rf_link_switch = daq.BooleanSwitch(
     color="#e3b859",
 )
 
+flight_mode_dropdown = dcc.Dropdown(
+    id="side-systems-check-flight-mode-dropdown-component",
+    className="flightmode",
+    options=[
+        {"label": "IDLE", "value": "idle"},
+        {"label": "FLIGHT", "value": "FLIGHT"},
+        {"label": "RECOVERY", "value": "recovery"},
+    ],
+    clearable=False,
+    value="IDLE",
+)
+
 # Section: side_team_info
 cansat_full_logo = html.Tr(
     id="side-logo-cansat",
@@ -546,57 +560,60 @@ mission_check_list = html.Div(
 )
 
 # Create a scatter plot
-gps_plot = dcc.Graph(
-    id='gps-plot',
-    figure={
-        'data': [
-            go.Scatter(
-                x=[], 
-                y=[], 
-                mode='markers',
-                marker=dict(
-                    size=10,
-                    color='rgba(255, 182, 193, .9)',
-                    line=dict(
-                        width=2,
-                        color='rgba(152, 0, 0, .8)'
-                    )
+gps_plot = html.Div(
+    dcc.Graph(
+        id="gps-plot",
+        figure={
+            "data": [
+                go.Scatter(
+                    x=[],
+                    y=[],
+                    mode="markers",
+                    marker=dict(
+                        size=10,
+                        color="rgba(255, 182, 193, .9)",
+                        line=dict(width=2, color="rgba(152, 0, 0, .8)"),
+                    ),
                 )
-            )
-        ],
-        'layout': go.Layout(
-            title='GPS Plot',
-            xaxis=dict(title='X GPS'),
-            yaxis=dict(title='Y GPS'),
-            hovermode='closest'
-        )
-    }
+            ],
+            "layout": go.Layout(
+                title="GPS Plot",
+                xaxis=dict(title="X GPS"),
+                yaxis=dict(title="Y GPS"),
+                hovermode="closest",
+                plot_bgcolor="#a9cad6",
+                paper_bgcolor="#a9cad6",
+            ),
+        },
+    ),
+    style={"border": "solid #e3b859", "border-radius": "10px"},  # Add a border here
 )
 
 # Create a histogram
-# Histogram
-histogram = dcc.Graph(
-    id='histogram',
-    figure={
-        'data': [
-            go.Histogram(
-                x=[],
-                marker=dict(
-                    color='rgba(100, 149, 237, .8)',
-                    line=dict(
-                        width=1,
-                        color='rgba(0, 0, 0, 1)'
-                    )
+histogram = html.Div(
+    dcc.Graph(
+        id="histogram",
+        figure={
+            "data": [
+                go.Histogram(
+                    x=[],
+                    marker=dict(
+                        color="rgba(100, 149, 237, .8)",
+                        line=dict(width=1, color="rgba(0, 0, 0, 1)"),
+                    ),
                 )
-            )
-        ],
-        'layout': go.Layout(
-            title='Histogram',
-            xaxis=dict(title='X'),
-            yaxis=dict(title='Frequency'),
-            hovermode='closest'
-        )
-    }
+            ],
+            "layout": go.Layout(
+                title="Histogram",
+                xaxis=dict(title="Time (in seconds)"),
+                yaxis=dict(title="Value"),
+                hovermode="closest",
+                plot_bgcolor="#a9cad6",
+                paper_bgcolor="#a9cad6",
+            ),
+        },
+    ),
+    style={"border": "solid #e3b859", "border-radius": "10px"},  # Add a border here
 )
 # Side layout
 
@@ -605,6 +622,8 @@ side_panel_layout = html.Div(
     children=[
         cansat_full_logo,
         rf_link_switch,
+        flight_mode_dropdown,
+        mission_check_list,
         html.Div(
             id="side-systems-check",
             children=[
@@ -620,7 +639,6 @@ side_panel_layout = html.Div(
                 camera,
             ],
         ),
-        mission_check_list,
         team_info,
     ],
 )
@@ -628,6 +646,9 @@ side_panel_layout = html.Div(
 main_panel_layout = html.Div(
     id="panel-main",
     children=[
+        dcc.Interval(
+            id="interval-component", interval=1 * 1000, n_intervals=0  # in milliseconds
+        ),
         gps_plot,
         html.Div(children=[station_utc, cansat_utc, utc_toggle]),
         battery_percentage,
@@ -636,8 +657,8 @@ main_panel_layout = html.Div(
         html.Div(children=[humidity, temperature]),
         pressure,
         html.Div(children=[altitude_gps, altitude_from_pressure, altitude_toggle]),
-        histogram
-    ]
+        histogram,
+    ],
 )
 # whole layout
 root_layout = html.Div(children=[side_panel_layout, main_panel_layout])
@@ -651,6 +672,13 @@ app.layout = root_layout
     Output("side-systems-check-rf-link-switch-result", "children"),
     Input("side-systems-check-rf-link-switch", "on"),
 )
+@app.callback(
+    Output("main-control-panel-station-utc-component", "value"),
+    Input("interval-component", "n_intervals"),
+)
+def update_time(n):
+    return datetime.datetime.now().strftime("%H:%M:%S")
+
 
 # # stopwatch
 # @callback(
