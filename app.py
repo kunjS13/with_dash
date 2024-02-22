@@ -3,11 +3,12 @@ import dash
 from dash import dcc, html, callback
 from dash.dependencies import Input, Output, State
 import pandas as pd
-import plotly.express as px
 import dash_daq as daq
 import subprocess
 import plotly.graph_objects as go
 import datetime
+import os
+import glob
 
 
 # Create a Dash app
@@ -22,7 +23,7 @@ app = dash.Dash(
 server = app.server
 
 # Read the CSV file and import assets
-df = pd.read_csv("csv_data/cansat_data.csv")
+
 cansat_logo = html.Div(html.Img(src="assets/navdhara_logo.png", height=70, width=70))
 cansat_text = html.Div(html.Img(src="assets/navdhara_text.png", height=70, width=205))
 
@@ -658,6 +659,36 @@ main_panel_layout = html.Div(
         pressure,
         html.Div(children=[altitude_gps, altitude_from_pressure, altitude_toggle]),
         histogram,
+        html.Pre(
+            id="live-update-text",
+            style={
+                "backgroundColor": "#000",
+                "color": "#fff",
+                "fontFamily": "Consolas",
+                "textAlign": "center",
+                "padding": "10px",
+                "borderRadius": "5px",
+                "margin": "auto",
+                "width": "50%",
+                "height": "50%",
+                "overflow": "auto",
+            },
+        ),
+        html.Pre(
+            id="python-script-run",
+            style={
+                "backgroundColor": "#000",
+                "color": "#fff",
+                "fontFamily": "Consolas",
+                "textAlign": "center",
+                "padding": "10px",
+                "borderRadius": "5px",
+                "margin": "auto",
+                "width": "50%",
+                "height": "50%",
+                "overflow": "auto",
+            },
+        ),
     ],
 )
 # whole layout
@@ -666,12 +697,34 @@ root_layout = html.Div(children=[side_panel_layout, main_panel_layout])
 app.layout = root_layout
 
 
-# Defining every callbacks
-# this is for clicking PowerButton
-@callback(
-    Output("side-systems-check-rf-link-switch-result", "children"),
-    Input("side-systems-check-rf-link-switch", "on"),
+@app.callback(
+    Output("live-update-text", "children"), Input("interval-component", "n_intervals")
 )
+def update_metrics(n):
+    # Get the latest CSV file
+    list_of_files = glob.glob(
+        "data/each_second/xbee_data_*.csv"
+    )  # * means all if need specific format then *.csv
+    latest_file = max(list_of_files, key=os.path.getctime)
+
+    # Read the second row of the CSV file
+    df = pd.read_csv(latest_file, skiprows=1, nrows=1)
+
+    # Convert the row to a string and return it
+    return df.to_string(index=False)
+
+@app.callback(
+    Output("python-script-run", "children"), Input("side-systems-check-rf-link-switch", "on")
+)
+def run_script(on):
+    if not on:
+        # Run the script and get its output
+        subprocess.run(["python", r"C:\Users\kunjs\Desktop\Cansat\SEM 7\DEV\GUI\CANSAT_data_viz\with_dash\data\simul_xbee_data_stream.py"])
+        return "Script has been run."
+    else:
+        return "Script has not been run."
+
+
 @app.callback(
     Output("main-control-panel-station-utc-component", "value"),
     Input("interval-component", "n_intervals"),
@@ -707,21 +760,6 @@ def update_time(n):
 
 # Callback Functions
 # this fn will return a string for the state of PowerButton
-def update_output(on):
-    return f"The button is {on}."
-
-
-# this fn will execute the cansat_data.csv file if PowerButton is clicked
-def execute_script(on):
-    if on == "True":
-        result = subprocess.run(
-            ["python", "csv_data/random_data_generator.py"],
-            capture_output=True,
-            text=True,
-        )
-        return f"Script Output: {result.stdout}"
-    else:
-        return ""
 
 
 # RUNNING
