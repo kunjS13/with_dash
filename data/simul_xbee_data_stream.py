@@ -2,6 +2,7 @@ import csv
 import random
 import datetime
 import time
+import os
 
 headers = ["TEAM ID", "TIME STAMPING", "PACKET COUNT", "ALTITUDE", "PRESSURE", "TEMP", "HUMIDITY", "VOLTAGE", "GNSS TIME", "GNSS LATITUDE", "GNSS LONGITUDE", "GNSS ALTITUDE", "GNSS SATS", "ACCELEROMETER DATA", "GYRO SPIN RATE", "FLIGHT SOFTWARE STATE", "ANY OPTIONAL DATA"]
 
@@ -10,6 +11,10 @@ max_packets = 100
 
 while True:
     if packet_count >= max_packets:
+        break
+    
+    if os.path.exists(f'data/each_second/xbee_data_100.csv'):
+        print("File 'xbee_data_100.csv' already exists. Exiting.")
         break
     
     team_id = "Team052"
