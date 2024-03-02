@@ -10,20 +10,16 @@ import datetime
 import os
 import glob
 
-
-# Create a Dash app
+#DASH APP
 app = dash.Dash(
     __name__,
     meta_tags=[
         {"name": "viewport", "content": "width=device-width, initial-scale=1.0"}
     ],
 )
-
-# This is for gunicorn
 server = app.server
 
-# Read the CSV file and import assets
-
+#READING CSV FILES AND ASSETS
 cansat_logo = html.Div(html.Img(src="assets/navdhara_logo.png", height=70, width=70))
 cansat_text = html.Div(html.Img(src="assets/navdhara_text.png", height=70, width=205))
 
@@ -247,6 +243,8 @@ humidity = html.Div(
     n_clicks=0,
 )
 
+#gyro_spin_rate widget
+
 # Section: extra_data
 x_gps = html.Div(  # these are absolute distance values from the module, TODO: set a reference point and then plot the scatter plot
     id="main-control-panel-x_gps",
@@ -263,7 +261,6 @@ x_gps = html.Div(  # these are absolute distance values from the module, TODO: s
     ],
     n_clicks=0,
 )
-
 y_gps = html.Div(
     id="main-control-panel-y_gps",
     children=[
@@ -279,6 +276,8 @@ y_gps = html.Div(
     ],
     n_clicks=0,
 )
+
+#add accl, gyro and magnetometer data logger
 
 # Section: side_systems_check
 bno = daq.Indicator(
@@ -386,9 +385,6 @@ stopwatch = html.Div(
     id="stopwatch",
     children=[
         html.H1(id="stopwatch-display", children="00:00:00"),
-        html.Button(id="stopwatch-button-start", children="Start", n_clicks=0),
-        html.Button(id="stopwatch-button-stop", children="Stop", n_clicks=0),
-        html.Button(id="stopwatch-button-reset", children="Reset", n_clicks=0),
         dcc.Interval(
             id="stopwatch-interval",
             interval=1000,  # in milliseconds
@@ -418,7 +414,7 @@ utc_toggle = daq.ToggleSwitch(
 rf_link_switch = daq.BooleanSwitch(
     id="side-systems-check-rf-link-switch",
     className="switch",
-    on="False",
+    on=False,
     label="RF Link",
     labelPosition="top",
     color="#e3b859",
@@ -616,13 +612,14 @@ histogram = html.Div(
     ),
     style={"border": "solid #e3b859", "border-radius": "10px"},  # Add a border here
 )
-# Side layout
 
+# Side layout
 side_panel_layout = html.Div(
     id="panel-side",
     children=[
         cansat_full_logo,
         rf_link_switch,
+        stopwatch,
         flight_mode_dropdown,
         mission_check_list,
         html.Div(
@@ -691,12 +688,11 @@ main_panel_layout = html.Div(
         ),
     ],
 )
-# whole layout
+# LAYOUT
 root_layout = html.Div(children=[side_panel_layout, main_panel_layout])
-
 app.layout = root_layout
 
-
+# CALLBACK: data logger
 @app.callback(
     Output("live-update-text", "children"), Input("interval-component", "n_intervals")
 )
@@ -713,18 +709,19 @@ def update_metrics(n):
     # Convert the row to a string and return it
     return df.to_string(index=False)
 
+# CALLBACK: scipt status
 @app.callback(
     Output("python-script-run", "children"), Input("side-systems-check-rf-link-switch", "on")
 )
 def run_script(on):
-    if not on:
+    if on:
         # Run the script and get its output
         subprocess.run(["python", r"C:\Users\kunjs\Desktop\Cansat\SEM 7\DEV\GUI\CANSAT_data_viz\with_dash\data\simul_xbee_data_stream.py"])
         return "Script has been run."
     else:
         return "Script has not been run."
 
-
+# CALLBACK: system time
 @app.callback(
     Output("main-control-panel-station-utc-component", "value"),
     Input("interval-component", "n_intervals"),
@@ -732,36 +729,26 @@ def run_script(on):
 def update_time(n):
     return datetime.datetime.now().strftime("%H:%M:%S")
 
+# CALLBACK: stopwatch
+@app.callback(
+    Output("stopwatch-interval", "n_intervals"),
+    Output("stopwatch-interval", "max_intervals"),
+    Input("side-systems-check-rf-link-switch", "on"),
+)
+def start_stopwatch(on):
+    if on:
+        return dash.no_update, -1  # -1 means no maximum number of intervals
+    else:
+        return 0, 0  # Reset the stopwatch and stop it from updating
+@app.callback(
+    Output("stopwatch-display", "children"), 
+    Input("stopwatch-interval", "n_intervals")
+)   
+def update_stopwatch(n_intervals):
+    minutes, seconds = divmod(n_intervals, 60)
+    hours, minutes = divmod(minutes, 60)
+    return f"{hours:02}:{minutes:02}:{seconds:02}"
 
-# # stopwatch
-# @callback(
-#     Output("stopwatch-interval", "n_intervals"),
-#     Input("stopwatch-button-start", "n_clicks"),
-#     Input("stopwatch-button-reset", "n_clicks"),
-#     State("stopwatch-interval", "n_intervals"),
-# )
-# def start_stopwatch(start_clicks, reset_clicks, n_intervals):
-#     if start_clicks > 0:
-#         return n_intervals + 1
-#     elif reset_clicks > 0:
-#         return 0
-#     else:
-#         return n_intervals
-
-
-# @callback(
-#     Output("stopwatch-display", "children"), Input("stopwatch-interval", "n_intervals")
-# )
-# def update_stopwatch(n_intervals):
-#     minutes, seconds = divmod(n_intervals, 60)
-#     hours, minutes = divmod(minutes, 60)
-#     return f"{hours:02}:{minutes:02}:{seconds:02}"
-
-
-# Callback Functions
-# this fn will return a string for the state of PowerButton
-
-
-# RUNNING
+# RUNNING APP
 if __name__ == "__main__":
     app.run_server(debug=True)
