@@ -38,29 +38,29 @@ import pytz
 headers_1 = [ #current headers
     "TEAM_ID",
     "PACKET_COUNT",
-    "ec",
-    "gnss_HOUR",
-    "gnss_MINUTE",
-    "gnss_SECOND",
-    "orientation_x",
-    "orientation_y",
-    "orientation_z",
-    "accel_x",
-    "accel_y",
-    "accel_z",
-    "gyro_x",
-    "gyro_y",
-    "gyro_z",
-    "temperature"
-    "bmp_altitude",
-    "bmp_pressure",
-    "gnss_latitude",
-    "gnss_longitude",
-    "gnss_altitude",
+    "EC_STATE",
+    "GNSS_HOUR",
+    "GNSS_MINUTE",
+    "GNSS_SECOND",
+    "ORIENTATION_X",
+    "ORIENTATION_Y",
+    "ORIENTATION_Z",
+    "ACCEL_X",
+    "ACCEL_Y",
+    "ACCEL_Z",
+    "GYRO_X",
+    "GYRO_Y",
+    "GYRO_Z",
+    "TEMPERATURE",
+    "BMP_ALTITUDE",
+    "BMP_PRESSURE",
+    "GNSS_LATITUDE",
+    "GNSS_LONGITUDE",
+    "GNSS_ALTITUDE",
 ]
 
-gmt = pytz.timezone("GMT")
-gmt_time = datetime.datetime.now(gmt)
+now = datetime.datetime.now()
+gmt_time = pytz.timezone('GMT').localize(now)
 
 packet_count = 0
 max_packets = 100
@@ -76,7 +76,7 @@ while True:
     team_id = "Team052"
     # time_stamping = datetime.datetime.now().isoformat()
     packet_count += 1
-    ec = random.choice(["IDLE", "FLIGHT", "RECOVERY"])
+    ec_state = "IDLE"
     gnss_hour = gmt_time.hour
     gnss_minute = gmt_time.minute
     gnss_second = gmt_time.second
@@ -118,7 +118,7 @@ while True:
             [
                 team_id,
                 packet_count,
-                ec,
+                ec_state,
                 gnss_hour,
                 gnss_minute,
                 gnss_second,
@@ -141,7 +141,7 @@ while True:
         )
         print(team_id,
                 packet_count,
-                ec,
+                ec_state,
                 gnss_hour,
                 gnss_minute,
                 gnss_second,

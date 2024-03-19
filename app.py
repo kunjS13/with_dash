@@ -9,8 +9,9 @@ import plotly.graph_objects as go
 import datetime
 import os
 import glob
+from data.reading_data import read_xbee_data
 
-#DASH APP
+# DASH APP
 app = dash.Dash(
     __name__,
     meta_tags=[
@@ -19,14 +20,14 @@ app = dash.Dash(
 )
 server = app.server
 
-#READING CSV FILES AND ASSETS
+# READING CSV FILES AND ASSETS
 cansat_logo = html.Div(html.Img(src="assets/navdhara_logo.png", height=70, width=70))
 cansat_text = html.Div(html.Img(src="assets/navdhara_text.png", height=70, width=205))
-
+data = read_xbee_data('data/each_second')
 
 # LAYOUT
 # Section: main_time_battery
-station_utc = html.Div(
+station_ist = html.Div(
     id="main-control-panel-station-utc",
     children=[
         daq.LEDDisplay(
@@ -41,7 +42,7 @@ station_utc = html.Div(
     n_clicks=0,
 )
 
-cansat_utc = html.Div(
+cansat_gmt = html.Div(
     id="main-control-panel-cansat-utc",
     children=[
         daq.LEDDisplay(
@@ -56,52 +57,52 @@ cansat_utc = html.Div(
     n_clicks=0,
 )
 
-battery_percentage = html.Div(
-    id="main-control-panel-battery-percentage",
-    children=[
-        daq.GraduatedBar(
-            id="main-control-panel-battery-component",
-            label="battery-precentage",
-            min=0,
-            max=100,
-            value=60,
-            step=1,
-            showCurrentValue=True,
-            color="#e3b859",
-        )
-    ],
-    n_clicks=0,
-)
+# battery_percentage = html.Div(
+#     id="main-control-panel-battery-percentage",
+#     children=[
+#         daq.GraduatedBar(
+#             id="main-control-panel-battery-component",
+#             label="battery-precentage",
+#             min=0,
+#             max=100,
+#             value=60,
+#             step=1,
+#             showCurrentValue=True,
+#             color="#e3b859",
+#         )
+#     ],
+#     n_clicks=0,
+# )
 
-battery_current = html.Div(
-    id="main-control-panel-battery-current",
-    children=[
-        daq.LEDDisplay(
-            id="main-control-panel-battery-current-component",
-            value="2.0",
-            label="Current (in A)",
-            size=20,
-            color="#e3b859",
-            backgroundColor="#2b2b2b",
-        )
-    ],
-    n_clicks=0,
-)
+# battery_current = html.Div(
+#     id="main-control-panel-battery-current",
+#     children=[
+#         daq.LEDDisplay(
+#             id="main-control-panel-battery-current-component",
+#             value="2.0",
+#             label="Current (in A)",
+#             size=20,
+#             color="#e3b859",
+#             backgroundColor="#2b2b2b",
+#         )
+#     ],
+#     n_clicks=0,
+# )
 
-battery_voltage = html.Div(
-    id="main-control-panel-battery-voltage",
-    children=[
-        daq.LEDDisplay(
-            id="main-control-panel-battery-voltage-component",
-            value="12.0",
-            label="Voltage (in V)",
-            size=20,
-            color="#e3b859",
-            backgroundColor="#2b2b2b",
-        )
-    ],
-    n_clicks=0,
-)
+# battery_voltage = html.Div(
+#     id="main-control-panel-battery-voltage",
+#     children=[
+#         daq.LEDDisplay(
+#             id="main-control-panel-battery-voltage-component",
+#             value="12.0",
+#             label="Voltage (in V)",
+#             size=20,
+#             color="#e3b859",
+#             backgroundColor="#2b2b2b",
+#         )
+#     ],
+#     n_clicks=0,
+# )
 
 # Section: main_control_panel
 x_vel = html.Div(  # this from gps
@@ -164,11 +165,9 @@ pressure = html.Div(
         daq.Tank(
             id="main-control-panel-pressure-component",
             label="Pressure",
-            min=0,
-            max=10,
-            value=2,
-            units="atm",
-            showCurrentValue=True,
+            min=100000,
+            max=110000,
+            units="bar",
             color="#303030",
         )
     ],
@@ -192,7 +191,7 @@ altitude_from_pressure = html.Div(  # this is calculated from pressure data
     n_clicks=0,
 )
 
-altitude_gps = html.Div(
+gnss_altitude = html.Div(
     id="main-control-panel-altitude-gps",
     children=[
         daq.Tank(
@@ -226,33 +225,33 @@ temperature = html.Div(
     n_clicks=0,
 )
 
-humidity = html.Div(
-    id="main-control-panel-humidity",
-    children=[
-        daq.Tank(
-            id="main-control-panel-humidity-component",
-            label="Humidity",
-            min=0,
-            max=100,
-            value=55,
-            units="Percentage",
-            showCurrentValue=True,
-            color="#303030",
-        )
-    ],
-    n_clicks=0,
-)
+# humidity = html.Div(
+#     id="main-control-panel-humidity",
+#     children=[
+#         daq.Tank(
+#             id="main-control-panel-humidity-component",
+#             label="Humidity",
+#             min=0,
+#             max=100,
+#             value=55,
+#             units="Percentage",
+#             showCurrentValue=True,
+#             color="#303030",
+#         )
+#     ],
+#     n_clicks=0,
+# )
 
-#gyro_spin_rate widget
+# gyro_spin_rate widget
 
 # Section: extra_data
-x_gps = html.Div(  # these are absolute distance values from the module, TODO: set a reference point and then plot the scatter plot
-    id="main-control-panel-x_gps",
+gnss_latitude = html.Div(  # these are absolute distance values from the module, TODO: set a reference point and then plot the scatter plot
+    id="main-control-panel-gnss-latitude",
     children=[
         daq.LEDDisplay(
-            id="main-control-panel-x-gps-component",
+            id="main-control-panel-gnss-latitude-component",
             value="0000.0000",
-            label="x-GPS",
+            label="Latitude",
             size=24,
             color="#e3b859",
             style={"color": "#black"},
@@ -261,13 +260,13 @@ x_gps = html.Div(  # these are absolute distance values from the module, TODO: s
     ],
     n_clicks=0,
 )
-y_gps = html.Div(
-    id="main-control-panel-y_gps",
+gnss_longitude = html.Div(
+    id="main-control-panel-gnss-longitude",
     children=[
         daq.LEDDisplay(
-            id="main-control-panel-y-gps-component",
+            id="main-control-panel-gnss-longitude-component",
             value="0050.9789",
-            label="y-GPS",
+            label="Longitude",
             size=24,
             color="#e3b859",
             style={"color": "#black"},
@@ -277,7 +276,155 @@ y_gps = html.Div(
     n_clicks=0,
 )
 
-#add accl, gyro and magnetometer data logger
+packet_count = html.Div(
+    id="main-control-panel-packet-count",
+    children=[
+        daq.LEDDisplay(
+            id="main-control-panel-packet-count-component",
+            value="0000",
+            label="Packet Count",
+            size=24,
+            color="#e3b859",
+            style={"color": "#black"},
+            backgroundColor="#2b2b2b",
+        )
+    ],
+)
+
+orientation_x = html.Div(
+    id="main-control-panel-orientation-x",
+    children=[
+        daq.Knob(
+            id="main-control-panel-orientation-x-component",
+            label="Orientation-X",
+            max=360,
+            value=3,
+            scale={"start": 0, "labelInterval": 30, "interval": 10},
+            color="#e3b859",
+            style={"color": "#black"},
+        )
+    ],
+)
+
+orientation_y = html.Div(
+    id="main-control-panel-orientation-y",
+    children=[
+        daq.Knob(
+            id="main-control-panel-orientation-y-component",
+            label="Orientation-Y",
+            max=360,
+            value=3,
+            scale={"start": 0, "labelInterval": 30, "interval": 10},
+            color="#e3b859",
+            style={"color": "#black"},
+        )
+    ],
+)
+
+orientation_z = html.Div(
+    id="main-control-panel-orientation-z",
+    children=[
+        daq.Knob(
+            id="main-control-panel-orientation-z-component",
+            label="Orientation-Z",
+            max=360,
+            value=3,
+            scale={"start": 0, "labelInterval": 30, "interval": 10},
+            color="#e3b859",
+            style={"color": "#black"},
+        )
+    ],
+)
+
+accel_x = html.Div(
+    id="main-control-panel-accel-x",
+    children=[
+        daq.LEDDisplay(
+            id="main-control-panel-accel-x-component",
+            value="10.0",
+            label="Accel-X",
+            size=24,
+            color="#e3b859",
+            style={"color": "#black"},
+            backgroundColor="#2b2b2b",
+        )
+    ],
+)
+
+accel_y = html.Div(
+    id="main-control-panel-accel-y",
+    children=[
+        daq.LEDDisplay(
+            id="main-control-panel-accel-y-component",
+            value="10.0",
+            label="Accel-Y",
+            size=24,
+            color="#e3b859",
+            style={"color": "#black"},
+            backgroundColor="#2b2b2b",
+        )
+    ],
+)
+
+accel_z = html.Div(
+    id="main-control-panel-accel-z",
+    children=[
+        daq.LEDDisplay(
+            id="main-control-panel-accel-z-component",
+            value="10.0",
+            label="Accel-Z",
+            size=24,
+            color="#e3b859",
+            style={"color": "#black"},
+            backgroundColor="#2b2b2b",
+        )
+    ],
+)
+
+gyro_x = html.Div(
+    id="main-control-panel-gyro-x",
+    children=[
+        daq.LEDDisplay(
+            id="main-control-panel-gyro-x-component",
+            value="0.0",
+            label="Gyro-X",
+            size=24,
+            color="#e3b859",
+            style={"color": "#black"},
+            backgroundColor="#2b2b2b",
+        )
+    ],
+)
+
+gyro_y = html.Div(
+    id="main-control-panel-gyro-y",
+    children=[
+        daq.LEDDisplay(
+            id="main-control-panel-gyro-y-component",
+            value="0.0",
+            label="Gyro-Y",
+            size=24,
+            color="#e3b859",
+            style={"color": "#black"},
+            backgroundColor="#2b2b2b",
+        )
+    ],
+)
+
+gyro_z = html.Div(
+    id="main-control-panel-gyro-z",
+    children=[
+        daq.LEDDisplay(
+            id="main-control-panel-gyro-z-component",
+            value="0.0",
+            label="Gyro-Z",
+            size=24,
+            color="#e3b859",
+            style={"color": "#black"},
+            backgroundColor="#2b2b2b",
+        )
+    ],
+)
 
 # Section: side_systems_check
 bno = daq.Indicator(
@@ -290,15 +437,15 @@ bno = daq.Indicator(
     style={"color": "#black"},
 )
 
-magnetometer = daq.Indicator(
-    className="avionics",
-    id="magnetometer",
-    label="Magnetometer",
-    labelPosition="bottom",
-    value=True,
-    color="#e3b859",
-    style={"color": "#black"},
-)
+# magnetometer = daq.Indicator(
+#     className="avionics",
+#     id="magnetometer",
+#     label="Magnetometer",
+#     labelPosition="bottom",
+#     value=True,
+#     color="#e3b859",
+#     style={"color": "#black"},
+# )
 
 bmp = daq.Indicator(
     className="avionics",
@@ -330,15 +477,15 @@ buzzer = daq.Indicator(
     style={"color": "#black"},
 )
 
-motor_driver = daq.Indicator(
-    className="avionics",
-    id="motor-driver",
-    label="Motor driver L293d",
-    labelPosition="bottom",
-    value=True,
-    color="#e3b859",
-    style={"color": "#black"},
-)
+# motor_driver = daq.Indicator(
+#     className="avionics",
+#     id="motor-driver",
+#     label="Motor driver L293d",
+#     labelPosition="bottom",
+#     value=True,
+#     color="#e3b859",
+#     style={"color": "#black"},
+# )
 
 gps_module = daq.Indicator(
     className="avionics",
@@ -350,15 +497,15 @@ gps_module = daq.Indicator(
     style={"color": "#black"},
 )
 
-stm32f4 = daq.Indicator(
-    className="avionics",
-    id="stm32f4",
-    label="STM32F",
-    labelPosition="bottom",
-    value=True,
-    color="#e3b859",
-    style={"color": "#black"},
-)
+# stm32f4 = daq.Indicator(
+#     className="avionics",
+#     id="stm32f4",
+#     label="STM32F",
+#     labelPosition="bottom",
+#     value=True,
+#     color="#e3b859",
+#     style={"color": "#black"},
+# )
 
 esp32 = daq.Indicator(
     className="avionics",
@@ -398,7 +545,7 @@ stopwatch = html.Div(
 altitude_toggle = daq.ToggleSwitch(
     id="main-control-panel-toggle-altitude",
     value=True,
-    label=["GPS", "From Pressure"],
+    label=["GPS", "Sensor"],
     color="#ffe102",
     style={"color": "#black"},
 )
@@ -626,13 +773,10 @@ side_panel_layout = html.Div(
             id="side-systems-check",
             children=[
                 bno,
-                magnetometer,
                 bmp,
                 aht,
                 buzzer,
-                motor_driver,
                 gps_module,
-                stm32f4,
                 esp32,
                 camera,
             ],
@@ -647,14 +791,41 @@ main_panel_layout = html.Div(
         dcc.Interval(
             id="interval-component", interval=1 * 1000, n_intervals=0  # in milliseconds
         ),
-        gps_plot,
-        html.Div(children=[station_utc, cansat_utc, utc_toggle]),
-        battery_percentage,
-        html.Div(children=[battery_current, battery_voltage]),
-        html.Div(children=[x_vel, y_vel, z_vel]),
-        html.Div(children=[humidity, temperature]),
-        pressure,
-        html.Div(children=[altitude_gps, altitude_from_pressure, altitude_toggle]),
+        html.Div(
+            children=[
+                html.Div(
+                    children=[gps_plot],
+                    style={"flex": "75%", "display": "inline-block", "margin": "10px"},
+                ),
+                html.Div(
+                    children=[gnss_latitude, gnss_longitude],
+                    style={"flex": "25%", "display": "inline-block", "margin": "10px"},
+                ),
+            ],
+            style={"display": "flex"},
+        ),
+        html.Div(
+            children=[station_ist, html.Div(utc_toggle, style={"margin": "auto"}) , cansat_gmt],
+            style={"display": "flex", "margin": "10px"}
+        ),
+        html.Div(children=[x_vel, y_vel, z_vel], style={"display": "flex", "margin": "10px"}),
+        html.Div(
+            children=[orientation_x, orientation_y, orientation_z],
+            style={"display": "flex", "margin": "10px"},
+        ),
+        html.Div(
+            children=[accel_x, accel_y, accel_z],
+            style={"display": "flex", "margin": "10px"},
+        ),
+        html.Div(
+            children=[gyro_x, gyro_y, gyro_z],
+            style={"display": "flex", "margin": "10px"},
+        ),
+        html.Div(children=[pressure, temperature], style={"display": "flex", "margin": "10px"}),
+        html.Div(
+            children=[gnss_altitude, html.Div(altitude_toggle, style={"margin": "auto"}), altitude_from_pressure],
+            style={"display": "flex", "margin": "10px"},
+        ),
         histogram,
         html.Pre(
             id="live-update-text",
@@ -665,7 +836,7 @@ main_panel_layout = html.Div(
                 "textAlign": "center",
                 "padding": "10px",
                 "borderRadius": "5px",
-                "margin": "auto",
+                "margin": "10px",
                 "width": "50%",
                 "height": "50%",
                 "overflow": "auto",
@@ -680,7 +851,7 @@ main_panel_layout = html.Div(
                 "textAlign": "center",
                 "padding": "10px",
                 "borderRadius": "5px",
-                "margin": "auto",
+                "margin": "10px",
                 "width": "50%",
                 "height": "50%",
                 "overflow": "auto",
@@ -688,9 +859,11 @@ main_panel_layout = html.Div(
         ),
     ],
 )
+
 # LAYOUT
 root_layout = html.Div(children=[side_panel_layout, main_panel_layout])
 app.layout = root_layout
+
 
 # CALLBACK: data logger
 @app.callback(
@@ -703,23 +876,31 @@ def update_metrics(n):
     )  # * means all if need specific format then *.csv
     latest_file = max(list_of_files, key=os.path.getctime)
 
-    # Read the second row of the CSV file
-    df = pd.read_csv(latest_file, skiprows=1, nrows=1)
+    # Read the last row of the CSV file
+    df = pd.read_csv(latest_file, skiprows=-1, nrows=1)
 
     # Convert the row to a string and return it
     return df.to_string(index=False)
 
+
 # CALLBACK: scipt status
 @app.callback(
-    Output("python-script-run", "children"), Input("side-systems-check-rf-link-switch", "on")
+    Output("python-script-run", "children"),
+    Input("side-systems-check-rf-link-switch", "on"),
 )
 def run_script(on):
     if on:
         # Run the script and get its output
-        subprocess.run(["python", r"C:\Users\kunjs\Desktop\Cansat\SEM 7\DEV\GUI\CANSAT_data_viz\with_dash\data\simul_xbee_data_stream.py"])
+        subprocess.run(
+            [
+                "python",
+                r"data\simul_xbee_data_stream.py",
+            ]
+        )
         return "Script has been run."
     else:
         return "Script has not been run."
+
 
 # CALLBACK: system time
 @app.callback(
@@ -728,6 +909,7 @@ def run_script(on):
 )
 def update_time(n):
     return datetime.datetime.now().strftime("%H:%M:%S")
+
 
 # CALLBACK: stopwatch
 @app.callback(
@@ -740,14 +922,25 @@ def start_stopwatch(on):
         return dash.no_update, -1  # -1 means no maximum number of intervals
     else:
         return 0, 0  # Reset the stopwatch and stop it from updating
+
+
 @app.callback(
-    Output("stopwatch-display", "children"), 
-    Input("stopwatch-interval", "n_intervals")
-)   
+    Output("stopwatch-display", "children"), Input("stopwatch-interval", "n_intervals")
+)
 def update_stopwatch(n_intervals):
     minutes, seconds = divmod(n_intervals, 60)
     hours, minutes = divmod(minutes, 60)
     return f"{hours:02}:{minutes:02}:{seconds:02}"
+
+
+# CALLBACK: update pressure
+@app.callback(Output("main-control-panel-pressure-component", "value"), Input("interval-component", "n_intervals"))
+def update_components(n_intervals):
+    if n_intervals > 0:
+        pressure_values = data.get('BMP_PRESSURE', [])
+        return (pressure_values[-1] if pressure_values else 0)
+    else:
+        return 0
 
 # RUNNING APP
 if __name__ == "__main__":

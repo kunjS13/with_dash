@@ -87,7 +87,7 @@ body {
     margin-top:  2rem;
     cursor: pointer;
     display: grid;
-    grid-template-columns: repeat(5,  1fr);
+    grid-template-columns: repeat(4,  1fr);
     grid-template-rows: repeat(2, auto);
     gap:  1rem; /* Adjust the gap between grid items as needed */
     width:  100%; /* Ensure the grid takes up the full width of the side panel */
